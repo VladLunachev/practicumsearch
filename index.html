@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="search.css" />
+    <script src="https://cdn.jsdelivr.net/npm/algoliasearch@4.5.1/dist/algoliasearch-lite.umd.js" integrity="sha256-EXPXz4W6pQgfYY3yTpnDa3OH8/EPn16ciVsPQ/ypsjk=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/instantsearch.js@4.8.3/dist/instantsearch.production.min.js" integrity="sha256-LAGhRRdtVoD6RLo2qDQsU2mp+XVSciKRC8XPOBWmofM=" crossorigin="anonymous"></script>
+    <title>Practicum Search</title>
+  </head>
+  <body>
+    <div id="search">
+      <div id="search-container">
+        <svg class="ais-SearchBox-submitIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50">
+          <path
+            d="M26.804 29.01c-2.832 2.34-6.465 3.746-10.426 3.746C7.333 32.756 0 25.424 0 16.378 0 7.333 7.333 0 16.378 0c9.046 0 16.378 7.333 16.378 16.378 0 3.96-1.406 7.594-3.746 10.426l10.534 10.534c.607.607.61 1.59-.004 2.202-.61.61-1.597.61-2.202.004L26.804 29.01zm-10.426.627c7.323 0 13.26-5.936 13.26-13.26 0-7.32-5.937-13.257-13.26-13.257C9.056 3.12 3.12 9.056 3.12 16.378c0 7.323 5.936 13.26 13.258 13.26z"
+          ></path>
+        </svg>
+        <button id="close-search" title="Click to close or press Esc.">✕</button>
+      </div>
+      <div id="hits-container">
+        <div id="search-note">
+          <div id="search-note-card" class="markdown markdown_type_theory markdown_size_small">
+            <span class="search-note-title"><b>You can search here for any:</b></span>
+            <p class="search-note-text">
+              ● action you want to perform (like "add element" or "count unique values")
+              <br />
+              ● part of code (like "loc" or "format")
+              <br />
+              ● term or abbreviation that we use in our course materials (like "variable" or "df")
+              <br />
+            </p>
+            <br />
+            <span class="search-note-title"><b>A note on memorization strategy:</b></span>
+            <p class="search-note-text">
+              If you struggle to remember some syntax, it doesn't mean that you are failing. Feel free to use the search bar right away, and don't feel bad about it. This knowledge will settle in your memory as you go through this course.
+              <a class="search-note-link" href="https://rebrand.ly/memorization-strategy-explainer" target="_blank">Learn more about memorization strategy.</a>
+            </p>
+          </div>
+          <div id="search-note-spacer"></div>
+        </div>
+        <div id="search-hits"></div>
+      </div>
+    </div>
+    <script>
+      searchClient = algoliasearch('JAGBS2F5BN', '84c9cda45d17f24ac906a87d81e75408');
+
+      const search = instantsearch({
+        indexName: 'practicum_data_us_search',
+        searchClient,
+        routing: false,
+        searchFunction: function (helper) {
+          var searchResults = document.querySelector('#search-hits');
+          if (helper.state.query === '') {
+            searchResults.style.display = 'none';
+            document.querySelector('#search-note').style.display = 'block';
+            return;
+          }
+          helper.search();
+          searchResults.style.display = 'block';
+          document.querySelector('#search-note').style.display = 'none';
+        },
+      });
+
+      search.addWidgets([
+        instantsearch.widgets.searchBox({
+          container: '#search-container',
+          placeholder: 'Forgot something? Search here!',
+          autofocus: false,
+          showReset: false,
+          showSubmit: false,
+          showLoadingIndicator: false,
+        }),
+        instantsearch.widgets.configure({
+          hitsPerPage: 200,
+        }),
+        instantsearch.widgets.hits({
+          container: '#search-hits',
+          escapeHTML: false,
+          templates: {
+            item: `
+      <div class='search-hits'>
+      <pre class="search-hit-text search-hit-description hljs-comment">{{#helpers.highlight}}{ "attribute": "description" }{{/helpers.highlight}}</pre>
+      <pre class="search-hit-text search-hit-code">{{#helpers.highlight}}{ "attribute": "body" }{{/helpers.highlight}}</pre>
+      </div>`,
+            empty: `<div class="markdown markdown_type_theory markdown_size_small"><p class="search-empty">Sorry. No snippets on this topic yet. You can <a class="search-note-link" id="search-support" target="_blank" href='https://rebrand.ly/learning-support'>ask our learning support</a> about it.</p></div>`,
+          },
+        }),
+      ]);
+      search.start();
+    </script>
+  </body>
+</html>
